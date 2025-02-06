@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>News Aggregator</title>
+    <!-- Bootstrap CSS CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  </head>
+  <body>
+    <!-- Навигационная панель -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+      <div class="container">
+        <a class="navbar-brand" href="#">News Aggregator</a>
+      </div>
+    </nav>
+    <!-- Основной контент -->
+    <div class="container my-5">
+      <h1 class="mb-4">Top Headlines</h1>
+      
+      <!-- Секция для категорий -->
+      <div class="mb-4">
+        <h4>Категории:</h4>
+        <!-- Значения кнопок: sports для спортивных новостей, technology для новостей о технологиях -->
+        <button id="btn-sports" class="btn btn-primary me-2">Спортивные</button>
+        <button id="btn-technology" class="btn btn-secondary">Технологии</button>
+      </div>
+      
+      <!-- Форма поиска -->
+      <div class="mb-4">
+        <h4>Поиск по новостям:</h4>
+        <div class="input-group">
+          <input id="search-input" type="text" class="form-control" placeholder="Введите запрос">
+          <button id="btn-search" class="btn btn-outline-secondary" type="button">Поиск</button>
+        </div>
+      </div>
+
+      <!-- Контейнер для отображения новостей -->
+      <div id="news-container" class="row">
+        <!-- Здесь будут отображаться новости -->
+      </div>
+    </div>
+    <!-- Bootstrap JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- JavaScript для загрузки новостей -->
+    <script>
+      // Функция для запроса новостей с дополнительными параметрами
+      async function fetchNews(queryParams = {}) {
+        let url = '/news';
+        const params = new URLSearchParams(queryParams);
+        if (params.toString()) {
+          url += '?' + params.toString();
+        }
+        try {
+          const response = await fetch(url);
+          const data = await response.json();
+          displayNews(data.articles);
+        } catch (error) {
+          console.error('Error fetching news:', error);
+        }
+      }
+
+      // Функция для отображения новостей на странице
+      function displayNews(articles) {
+        const newsContainer = document.getElementById('news-container');
+        newsContainer.innerHTML = '';
+        articles.forEach(article => {
+          const col = document.createElement('div');
+          col.className = 'col-md-4 mb-4';
+          col.innerHTML = `
+            <div class="card h-100">
+              <img src="${article.urlToImage || 'https://via.placeholder.com/150'}" class="card-img-top" alt="${article.title}">
+              <div class="card-body">
+                <h5 class="card-title">${article.title}</h5>
+                <p class="card-text">${article.description || ''}</p>
+              </div>
+              <div class="card-footer">
+                <a href="${article.url}" class="btn btn-primary" target="_blank">Read More</a>
+              </div>
+            </div>
+          `;
+          newsContainer.appendChild(col);
+        });
+      }
+
+      // Обработчики для кнопок категорий
+      document.getElementById('btn-sports').addEventListener('click', () => {
+        // При клике отправляем запрос с параметром category=sports
+        fetchNews({ category: 'sports' });
+      });
+
+      document.getElementById('btn-technology').addEventListener('click', () => {
+        // При клике отправляем запрос с параметром category=technology
+        fetchNews({ category: 'technology' });
+      });
+
+      // Обработчик для кнопки поиска
+      document.getElementById('btn-search').addEventListener('click', () => {
+        const query = document.getElementById('search-input').value;
+        if (query) {
+          fetchNews({ q: query });
+        }
+      });
+
+      // По умолчанию загружаем общие топ новости
+      window.onload = () => {
+        fetchNews();
+      }
+    </script>
+  </body>
+</html>
